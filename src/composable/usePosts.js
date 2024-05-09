@@ -1,26 +1,36 @@
-import { ref, onMounted } from "vue";
-import axios from "axios";
-import config from "@/config.js";
+import { ref } from 'vue'
+import { useTokenStore } from '@/store/token'
+import { useFetch } from '@/composable/useFetch'
+import utils from '@/utils.js'
 
-export const useUserPosts = () => {
-  const user = ref(null);
-  const posts = ref([]);
-  const error = ref(null);
-  const isLoading = ref(true);
-  const getUserPosts = async () => {
-    try {
-      const response = await axios.get(`${config.apiUrl}/`);
-      if (response) {
-        user.value = response.data.user;
-        posts.value = response.data.posts;
+export const usePosts = () => {
+  const posts = ref([])
+  const errors = ref([])
+  const isLoading = ref(true)
+  const meta = ref(null)
+  const { token } = useTokenStore()
+
+  const getPosts = async (hashtag, type, page) => {
+    const params = new URLSearchParams()
+    if (hashtag) params.append('hashtag', hashtag)
+    if (type) params.append('type', type)
+    if (page) params.append('page', page)
+    const { data, error } = await useFetch(
+      'get',
+      `posts?${params.toString()}`,
+      {},
+      {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    } catch(err) {
-      error.value = err.response ? err.response.data : config.defaultErrorMessage;
-    } finally {
-      isLoading.value = false
+    )
+    errors.value = error.value
+    if (error.value.length === 0) {
+      posts.value = data.value.items.map((item) => utils.toCamel(item))
+      meta.value = utils.toCamel(data.value.meta)
     }
-    
-  };
-  onMounted(getUserPosts);
-  return { user, posts, error, isLoading };
-};
+    isLoading.value = false
+  }
+
+  return { posts, meta, errors, getPosts, isLoading }
+}

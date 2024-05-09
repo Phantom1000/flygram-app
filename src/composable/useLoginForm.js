@@ -1,69 +1,94 @@
-import { ref } from "vue";
-import { useRouter } from 'vue-router'
-import axios from "axios";
-import { useStore } from "@/store";
-import config from "@/config";
-
+import { ref } from 'vue'
+import { useTokenStore } from '@/store/token'
+import { useUserStore } from '@/store/user'
+import { useRouter, useRoute } from 'vue-router'
+import { useFetch } from '@/composable/useFetch'
+import utils from '@/utils.js'
 
 export const useLoginForm = () => {
+  const errors = ref([])
+  const username = ref('')
+  const password = ref('')
+  const rememberMe = ref(false)
   const router = useRouter()
-  const errors = ref([]);
-  const username = ref("");
-  const password = ref("");
-  const rememberMe = ref(false);
+  const route = useRoute()
 
   const validateForm = () => {
     errors.value = {
       username: [],
-      password: [],
-    };
-    if (username.value === "") {
-      errors.value.username.push("Введите имя");
-    } else if (username.value.length < 3) {
-      errors.value.username.push("Слишком короткое имя пользователя");
-    } else if (username.value.length > 32) {
-      errors.value.username.push("Слишком длинное имя пользователя");
+      password: []
     }
-    if (password.value === "") {
-      errors.value.username.push("Введите пароль");
-    } else if (username.value.length < 3) {
-      errors.value.username.push("Слишком короткий пароль");
-    } else if (password.value.length > 32) {
-      errors.value.password.push("Слишком длинный пароль");
-    }
-    return errors.value.username.length == 0 && errors.value.password.length == 0;
-  };
+    utils.validateString(
+      username.value,
+      'username',
+      3,
+      32,
+      errors,
+      'Введите имя пользователя',
+      'Длина имени пользователя не может быть меньше 3 символов',
+      'Длина имени пользователя не может быть больше 32 символов',
+      'Имя пользователя не может содержать пробелы',
+      false
+    )
+    utils.validateString(
+      password.value,
+      'password',
+      8,
+      32,
+      errors,
+      'Введите пароль',
+      'Длина пароля не может быть меньше 8 символов',
+      'Длина пароля не может быть больше 32 символов',
+      'Пароль не может содержать пробелы',
+      false
+    )
+    return errors.value.username.length == 0 && errors.value.password.length == 0
+  }
 
   const sendForm = async () => {
-    try {
-      const response = await axios({
-        method: "post",
-        url: `${config.apiUrl}/login`,
-        data: {
-          username: username.value,
-          password: password.value,
-          rememberMe: rememberMe.value,
-        },
-        headers: { "Content-Type": "application/json" },
-      })
-      if (response) {
-        const { setFlashMessage, setFlashShow } = useStore();
-        if (response.data.message) {
-          setFlashMessage(response.data.message);
-          setFlashShow(2);
-        }
-        router.push('/');
+    errors.value = []
+    const { data, error } = await useFetch(
+      'post',
+      'token',
+      {
+        username: username.value.trim(),
+        password: password.value.trim(),
+        remember_me: rememberMe.value
+      },
+      { 'Content-Type': 'application/json' }
+    )
+    if (data.value) {
+      const { setToken } = useTokenStore()
+      const { setCurrentUser } = useUserStore()
+      const token = data.value.token
+      if (token) {
+        setToken(token, rememberMe.value)
       }
-    } catch(err) {
-      errors.value = err.response ? err.response.data.errors : [config.defaultErrorMessage]
-    }
-    
-  };
+      const userResponse = await useFetch(
+        'get',
+        'user/current',
+        {},
+        {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      )
+      if (userResponse.data.value) {
+        setCurrentUser(userResponse.data.value)
+      }
 
-  const sumbitForm = () => {
-    if (validateForm()) {
-      sendForm();
+      if (userResponse.error.value.length === 0) {
+        router.replace(route.query.redirect ? route.query.redirect : { name: 'posts' })
+      }
+      errors.value = userResponse.error.value
     }
-  };
-  return { username, password, rememberMe, errors, sumbitForm };
-};
+    errors.value = errors.value.concat(error.value)
+  }
+
+  const submitForm = () => {
+    if (validateForm()) {
+      sendForm()
+    }
+  }
+  return { username, password, rememberMe, errors, submitForm }
+}

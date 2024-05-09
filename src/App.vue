@@ -1,43 +1,60 @@
 <template>
   <HeaderComponent />
   <main class="container">
-    <div class="alert alert-success text-start mt-2" v-if="store.flashShow">
-      {{ store.flashMessage }}
-    </div>
-    <h1 class="text-center ms-3 my-3">{{ $route.meta.title }}</h1>
+    <FlashToastComponent />
     <router-view v-slot="{ Component }">
-      <transition name="fade">
+      <transition name="fade" mode="out-in">
         <component :is="Component"></component>
       </transition>
     </router-view>
   </main>
-  <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-    <div class="col-md-4 d-flex align-items-center">
-      <a href="/" class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1">
-        <svg class="bi" width="30" height="24">
-          <use xlink:href="#bootstrap"></use>
-        </svg>
-      </a>
-      <span class="mb-3 mb-md-0 text-muted">© 2022 Company, Inc</span>
-    </div>
-
-    <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
-      <li class="ms-3"><a class="text-muted" href="#"><svg class="bi" width="24" height="24">
-            <use xlink:href="#twitter"></use>
-          </svg></a></li>
-      <li class="ms-3"><a class="text-muted" href="#"><svg class="bi" width="24" height="24">
-            <use xlink:href="#instagram"></use>
-          </svg></a></li>
-      <li class="ms-3"><a class="text-muted" href="#"><svg class="bi" width="24" height="24">
-            <use xlink:href="#facebook"></use>
-          </svg></a></li>
-    </ul>
-  </footer>
+  <FooterComponent />
 </template>
 
 <script setup>
-import HeaderComponent from "@/components/HeaderComponent.vue";
-import { useStore } from "@/store";
+import HeaderComponent from '@/components/HeaderComponent.vue'
+import FlashToastComponent from '@/components/FlashToastComponent.vue'
+import FooterComponent from '@/components/FooterComponent.vue'
+import { useUserStore } from '@/store/user'
+import { useTokenStore } from '@/store/token'
+import { useFetch } from '@/composable/useFetch'
+import router from './router'
 
-const { store } = useStore();
+const { token } = useTokenStore()
+const { currentUser, setCurrentUser } = useUserStore()
+
+const loadCurrentUser = async () => {
+  if (token) {
+    const { data } = await useFetch(
+      'get',
+      'user/current',
+      {},
+
+      {
+        Authorization: `Bearer ${token}`
+      }
+    )
+    if (data.value) {
+      setCurrentUser(data.value)
+    } else {
+      router.replace({ name: 'logout' })
+    }
+  }
+}
+
+if (!currentUser) {
+  loadCurrentUser()
+}
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
