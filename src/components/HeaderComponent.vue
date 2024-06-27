@@ -30,24 +30,22 @@
                 >Друзья</RouterLink
               >
             </li>
-            <!-- <li class="nav-item">
+            <li class="nav-item">
               <RouterLink
-                :to="{ name: 'friends' }"
+                :to="{ name: 'communities' }"
                 class="nav-link px-2 text-white flylink"
                 exact-active-class="active"
                 >Сообщества</RouterLink
               >
-            </li> -->
-
-            <!-- <li class="nav-item">
+            </li>
+            <li>
               <RouterLink
-                v-if="currentUser"
-                :to="{ name: 'friends' }"
+                :to="{ name: 'vacancies' }"
                 class="nav-link px-2 text-white flylink"
                 exact-active-class="active"
                 >Вакансии</RouterLink
               >
-            </li>-->
+            </li>
           </template>
           <template v-else>
             <li class="nav-item">

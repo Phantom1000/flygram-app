@@ -1,45 +1,30 @@
 export default {
-  formatDate(date) {
-    const MONTHS = [
-      'января',
-      'февраля',
-      'марта',
-      'апреля',
-      'мая',
-      'июня',
-      'июля',
-      'августа',
-      'сентября',
-      'октрября',
-      'ноября',
-      'декабря'
-    ]
-    let result = new Date(date)
-    return `${result.getDate()} ${MONTHS[result.getMonth()]} ${result.getFullYear()}`
-  },
-
   validateString(
     string,
     key,
-    min,
-    max,
     errors,
-    input_message,
-    min_message,
-    max_message,
-    spaces_message = '',
+    required = true,
+    requiredMessage = '',
+    min = 1,
+    minMessage = '',
+    max = 100,
+    maxMessage = '',
     spaces = true,
-    required = true
+    spacesMessage = '',
+    pattern = '',
+    patternMessage = ''
   ) {
     if (string === '' && required) {
-      errors.value[key].push(input_message)
+      errors.value[key].push(requiredMessage)
     } else if (string.length < min) {
-      errors.value[key].push(min_message)
+      errors.value[key].push(minMessage)
     } else if (string.length > max) {
-      errors.value[key].push(max_message)
+      errors.value[key].push(maxMessage)
+    } else if (pattern && !pattern.test(string) && string !== '') {
+      errors.value[key].push(patternMessage)
     }
     if (!spaces && string.includes(' ')) {
-      errors.value[key].push(spaces_message)
+      errors.value[key].push(spacesMessage)
     }
   },
 

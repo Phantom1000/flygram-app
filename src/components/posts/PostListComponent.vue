@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <SpinnerComponent v-if="isLoading" />
+    <SpinnerComponent v-if="isLoadingPosts" />
     <div class="row justify-content-center d-flex align-items-center" v-else>
       <h1 class="text-center ms-3 my-3">
         {{ errors && errors.length > 0 ? errors[0] : route.meta.title }}
@@ -12,7 +12,7 @@
           </li>
         </ul>
       </div>
-      <template v-else>
+      <template v-else-if="currentUser">
         <div class="col-md-12 col-lg-9">
           <ul class="nav d-flex justify-content-center">
             <li class="nav-item">
@@ -45,7 +45,7 @@
               <h2 class="text-center mt-3">Поиск</h2>
               <form class="card-body" role="search">
                 <input
-                  v-model.lazy="body"
+                  v-model.lazy="search"
                   class="form-control mt-3"
                   type="search"
                   placeholder="Текст"
@@ -61,7 +61,6 @@
                 :post="post"
               ></PostComponent>
             </div>
-            <PaginationComponent label="Страницы новостей" :meta="meta"></PaginationComponent>
           </div>
         </div>
       </template>
@@ -75,19 +74,32 @@ import { usePosts } from '@/composable/usePosts'
 import SpinnerComponent from '@/components/SpinnerComponent.vue'
 import { useRoute } from 'vue-router'
 import PostComponent from '@/components/posts/PostComponent.vue'
-import PaginationComponent from '@/components/PaginationComponent.vue'
+import { useLoading } from '@/composable/useLoading'
+import { useUserStore } from '@/store/user'
+import { storeToRefs } from 'pinia'
 
-const { posts, meta, getPosts, isLoading, errors } = usePosts()
+const { currentUser } = storeToRefs(useUserStore())
+
+const { posts, meta, getPosts, isLoadingPosts, errors } = usePosts()
 const route = useRoute()
-const body = ref('')
+const search = ref('')
+const currentPage = ref(1)
+const hashtag = ref(route.query.hashtag)
+const type = ref(route.query.type)
 
 watchEffect(() => {
-  getPosts(route.query.hashtag, route.query.type, route.query.page)
+  currentPage.value = 1
+  posts.value = []
+  hashtag.value = route.query.hashtag
+  type.value = route.query.type
+  getPosts(1, hashtag, type, search, null, null, true)
 })
 
 const deletePost = (post) => {
   posts.value = posts.value.filter((el) => el !== post)
 }
+
+useLoading(currentPage, getPosts, isLoadingPosts, meta, hashtag, type, search, null, null)
 </script>
 
 <style>

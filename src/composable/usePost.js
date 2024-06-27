@@ -1,15 +1,16 @@
 import { ref } from 'vue'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 import utils from '@/utils.js'
 
 export const usePost = () => {
   const post = ref(null)
   const errors = ref([])
-  const isLoading = ref(true)
-  const { token } = useTokenStore()
+  const isLoadingPost = ref(true)
+  const { getToken } = useToken()
 
   const fetchPost = async (id, action) => {
+    const token = await getToken()
     const { data, error } = await useFetch(
       action,
       `post/${id}`,
@@ -21,8 +22,8 @@ export const usePost = () => {
     )
     errors.value = error.value
     if (error.value.length === 0) post.value = utils.toCamel(data.value)
-    isLoading.value = false
+    isLoadingPost.value = false
   }
 
-  return { post, errors, fetchPost, isLoading }
+  return { post, errors, fetchPost, isLoadingPost }
 }

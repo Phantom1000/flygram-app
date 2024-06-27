@@ -1,7 +1,7 @@
 <template>
   <nav :aria-label="props.label" class="d-flex justify-content-center mt-3">
     <ul class="pagination">
-      <li class="page-item" v-if="route.query.page > 1">
+      <li class="page-item" :class="{ disabled: route.query.page < 2 }" v-if="meta.totalPages > 1">
         <RouterLink
           class="page-link"
           :to="{
@@ -20,7 +20,11 @@
           >{{ index }}</RouterLink
         >
       </li>
-      <li class="page-item" v-if="route.query.page < meta.totalPages">
+      <li
+        class="page-item"
+        :class="{ disabled: route.query.page >= meta.totalPages }"
+        v-if="meta.totalPages > 1"
+      >
         <RouterLink
           class="page-link"
           :to="{

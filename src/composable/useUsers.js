@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 // import { useRoute } from 'vue-router'
 import utils from '@/utils.js'
@@ -9,21 +9,39 @@ export const useUsers = () => {
   const errors = ref(null)
   const isLoading = ref(true)
   const meta = ref(null)
-  const { token } = useTokenStore()
+  const { getToken } = useToken()
   // const route = useRoute()
 
-  const getUsers = async (username, type, page, firstname, lastname, city, education, career) => {
+  const getUsers = async ({
+    username,
+    communityId,
+    type,
+    page,
+    firstname,
+    lastname,
+    city,
+    education,
+    career,
+    vacancyId
+  }) => {
     const params = new URLSearchParams()
-    if (firstname !== '') params.append('firstname', firstname)
-    if (lastname !== '') params.append('lastname', lastname)
-    if (city !== '') params.append('city', city)
-    if (education !== '') params.append('education', education)
-    if (career !== '') params.append('career', career)
+    if (firstname) params.append('firstname', firstname)
+    if (lastname) params.append('lastname', lastname)
+    if (city) params.append('city', city)
+    if (education) params.append('education', education)
+    if (career) params.append('career', career)
     if (page) params.append('page', page)
     if (type) params.append('type', type)
+    if (vacancyId) params.append('vacancy', vacancyId)
+    const path = username
+      ? 'friends/' + username + '?'
+      : communityId
+        ? 'members/' + communityId + '?'
+        : 'users?'
+    const token = await getToken()
     const { data, error } = await useFetch(
       'get',
-      `${(username ? 'friends/' + username + '?' : 'users?') + params.toString()}`,
+      `${path + params.toString()}`,
       {},
       {
         Authorization: `Bearer ${token}`,

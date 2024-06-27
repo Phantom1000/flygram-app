@@ -1,7 +1,7 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useFetch } from '@/composable/useFetch'
 import { useRouter } from 'vue-router'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useUserStore } from '@/store/user'
 import utils from '@/utils.js'
 
@@ -20,166 +20,251 @@ export const useUserForm = (user = null) => {
   const dateBirth = ref('')
   const avatar = ref('')
   const passwordConfirm = ref('')
+  const skills = ref('')
   const errors = ref([])
   const router = useRouter()
+  const isLoadingUser = ref(false)
+  const { getToken } = useToken()
 
-  const validateForm = () => {
-    errors.value = {
-      username: [],
-      password: [],
-      firstname: [],
-      lastname: [],
-      email: [],
-      phoneNumber: [],
-      city: [],
-      address: [],
-      education: [],
-      career: [],
-      hobbies: [],
-      dateBirth: [],
-      avatar: []
-    }
+  const validateUsername = () => {
+    errors.value.username = []
     utils.validateString(
       username.value,
       'username',
-      3,
-      32,
       errors,
+      true,
       'Введите имя пользователя',
+      3,
       'Длина имени пользователя не может быть меньше 3 символов',
+      32,
       'Длина имени пользователя не может быть больше 32 символов',
+      false,
       'Имя пользователя не может содержать пробелы',
-      false
+      /^[a-zA-Z0-9_-]+$/i,
+      'Только символы латиницы, цифры, знаки дефиса и подчеркивания.'
     )
-    if (user === null) {
-      utils.validateString(
-        password.value,
-        'password',
-        8,
-        32,
-        errors,
-        'Введите пароль',
-        'Длина пароля не может быть меньше 8 символов',
-        'Длина пароля не может быть больше 32 символов',
-        'Пароль не может содержать пробелы',
-        false
-      )
-      if (password.value != passwordConfirm.value) {
-        errors.value.password.push('Пароли не совпадают')
-      }
-    }
+  }
 
+  const validatePassword = () => {
+    errors.value.password = []
+    utils.validateString(
+      password.value,
+      'password',
+      errors,
+      true,
+      'Введите пароль',
+      8,
+      'Длина пароля не может быть меньше 8 символов',
+      32,
+      'Длина пароля не может быть больше 32 символов',
+      false,
+      'Пароль не может содержать пробелы'
+    )
+    if (password.value !== passwordConfirm.value) errors.value.password.push('Пароли не совпадают')
+  }
+
+  const validateFirstname = () => {
+    errors.value.firstname = []
     utils.validateString(
       firstname.value,
       'firstname',
-      3,
-      32,
       errors,
+      true,
       'Введите Ваше имя',
+      3,
       'Длина имени не может быть меньше 3 символов',
-      'Длина имени не может быть больше 32 символов'
+      32,
+      'Длина пользователя не может быть больше 32 символов'
     )
+  }
+
+  const validateLastname = () => {
+    errors.value.lastname = []
     utils.validateString(
       lastname.value,
       'lastname',
-      3,
-      32,
       errors,
+      true,
       'Введите Вашу фамилию',
+      3,
       'Длина фамилии не может быть меньше 3 символов',
-      'Длина фамилии не может быть больше 32 символов'
+      32,
+      'Длина фамилии не может быть больше 32 символов',
+      false,
+      'Пароль не может содержать пробелы'
     )
+  }
+
+  const validateEmail = () => {
+    errors.value.email = []
     utils.validateString(
       email.value,
       'email',
-      5,
-      100,
       errors,
+      true,
       'Введите Ваш email',
-      'Длина email не может быть меньше 3 символов',
+      5,
+      'Длина email не может быть меньше 5 символовв',
+      32,
       'Длина email не может быть больше 32 символов',
-      'Email не может содержать пробелы',
       false,
-      false
+      'Пароль не может содержать пробелы',
+      /^[A-Z0-9._%+-]+@[A-Z0-9-]+.+.[A-Z]{2,4}$/i,
+      'Проверьте email'
     )
+  }
+
+  const validatePhoneNumber = () => {
+    errors.value.phoneNumber = []
+    utils.validateString(
+      phoneNumber.value,
+      'phoneNumber',
+      errors,
+      false,
+      '',
+      0,
+      '',
+      32,
+      'Длина номера не может быть больше 32 символов',
+      false,
+      'Номер не может содержать пробелы',
+      /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/,
+      'Проверьте номер телефона'
+    )
+  }
+
+  const validateCity = () => {
+    errors.value.city = []
     utils.validateString(
       city.value,
       'city',
-      0,
-      100,
       errors,
+      false,
       '',
+      0,
       '',
-      'Длина названия города не может быть больше 100 символов',
-      '',
-      true,
-      false
+      100,
+      'Длина названия города не может быть больше 100 символов'
     )
+  }
+
+  const validateAddress = () => {
+    errors.value.address = []
     utils.validateString(
       address.value,
       'address',
-      0,
-      100,
       errors,
+      false,
       '',
+      0,
       '',
-      'Длина адреса не может быть больше 100 символов',
-      '',
-      true,
-      false
+      100,
+      'Длина адреса не может быть больше 100 символов'
     )
+  }
+
+  const validateEducation = () => {
+    errors.value.education = []
     utils.validateString(
       education.value,
       'education',
-      0,
-      100,
       errors,
+      false,
       '',
+      0,
       '',
-      'Информация об образовании не может содержать больше 100 символов',
-      '',
-      true,
-      false
+      100,
+      'Информация об образовании не может содержать больше 100 символов'
     )
+  }
+
+  const validateCareer = () => {
+    errors.value.career = []
     utils.validateString(
       career.value,
       'career',
-      0,
-      100,
       errors,
+      false,
       '',
+      0,
       '',
-      'Информация о карьере не может содержать больше 100 символов',
-      '',
-      true,
-      false
+      100,
+      'Информация о карьере не может содержать больше 100 символов'
     )
+  }
+
+  const validateSkills = () => {
+    errors.value.skills = []
+    utils.validateString(
+      skills.value,
+      'skills',
+      errors,
+      false,
+      '',
+      0,
+      '',
+      100,
+      'Длина навыков не может быть больше 100 символов',
+      false,
+      'Навыки не могут содержать пробелы'
+    )
+  }
+
+  const validateHobbies = () => {
+    errors.value.hobbies = []
     utils.validateString(
       hobbies.value,
       'hobbies',
-      0,
-      500,
       errors,
+      false,
       '',
+      0,
       '',
-      'Информация об увлечениях не может содержать больше 500 символов',
-      '',
-      true,
-      false
+      500,
+      'Информация об увлечениях не может содержать больше 500 символов'
     )
+  }
+
+  const validateDateBirth = () => {
+    errors.value.dateBirth = []
     const date = Date.parse(dateBirth.value)
     if (dateBirth.value !== '' && (isNaN(date) || date > Date.now())) {
       errors.value.dateBirth.push('Проверьте дату рождения')
     }
-    if (
-      phoneNumber.value !== '' &&
-      phoneNumber.value.match(/\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/) === null
-    ) {
-      errors.value.phoneNumber.push('Проверьте номер телефона')
+  }
+
+  watch(username, validateUsername)
+  watch(password, validatePassword)
+  watch(passwordConfirm, validatePassword)
+  watch(firstname, validateFirstname)
+  watch(lastname, validateLastname)
+  watch(email, validateEmail)
+  watch(city, validateCity)
+  watch(address, validateAddress)
+  watch(dateBirth, validateDateBirth)
+  watch(phoneNumber, validatePhoneNumber)
+  watch(education, validateEducation)
+  watch(career, validateCareer)
+  watch(skills, validateSkills)
+  watch(hobbies, validateHobbies)
+
+  const validateForm = () => {
+    errors.value = {}
+    validateUsername()
+    if (user === null) {
+      validatePassword()
     }
-    if (!email.value.includes('@') || !email.value.includes('.')) {
-      errors.value.email.push('Проверьте email')
-    }
+    validateFirstname()
+    validateLastname()
+    validateEmail()
+    validateCity()
+    validateDateBirth()
+    validatePhoneNumber()
+    validateAddress()
+    validateEducation()
+    validateCareer()
+    validateSkills()
+    validateHobbies()
     let result = true
     for (let field in errors.value) {
       if (errors.value[field].length > 0) {
@@ -189,25 +274,29 @@ export const useUserForm = (user = null) => {
     return result
   }
 
-  const sumbitForm = async () => {
+  const submitForm = async () => {
+    console.log('asdasd')
     if (validateForm()) {
       errors.value = []
-      const { token } = useTokenStore()
+      isLoadingUser.value = true
+      //const { token } = useTokenStore()
+      const token = await getToken()
       const userData = new FormData()
-      userData.append('username', username.value.trim())
-      userData.append('firstname', firstname.value.trim())
-      userData.append('lastname', lastname.value.trim())
-      if (phoneNumber.value.trim()) userData.append('phone_number', phoneNumber.value.trim())
-      userData.append('email', email.value.trim())
-      if (city.value.trim()) userData.append('city', city.value.trim())
-      if (dateBirth.value.trim()) userData.append('date_birth', dateBirth.value.trim())
+      userData.append('username', username.value)
+      userData.append('firstname', firstname.value)
+      userData.append('lastname', lastname.value)
+      if (phoneNumber.value) userData.append('phone_number', phoneNumber.value)
+      userData.append('email', email.value)
+      if (city.value) userData.append('city', city.value)
+      if (dateBirth.value) userData.append('date_birth', dateBirth.value)
       if (avatar.value) userData.append('avatar', avatar.value)
-      if (hobbies.value.trim()) userData.append('hobbies', hobbies.value.trim())
-      if (education.value.trim()) userData.append('education', education.value.trim())
-      if (career.value.trim()) userData.append('career', career.value.trim())
+      if (hobbies.value) userData.append('hobbies', hobbies.value)
+      if (education.value) userData.append('education', education.value)
+      if (career.value) userData.append('career', career.value)
+      if (skills.value) userData.append('skills', skills.value)
 
       if (user === null) {
-        userData.append('password', password.value.trim())
+        userData.append('password', password.value)
       }
       const { data, error } = await useFetch(
         user === null ? 'post' : 'put',
@@ -231,9 +320,8 @@ export const useUserForm = (user = null) => {
             ? { name: 'login' }
             : { name: 'profile', params: { username: username.value } }
         )
-      } else {
-        scrollTo(0, 0)
       }
+      isLoadingUser.value = false
     }
   }
   return {
@@ -249,9 +337,11 @@ export const useUserForm = (user = null) => {
     career,
     hobbies,
     avatar,
+    skills,
     password,
     passwordConfirm,
     errors,
-    sumbitForm
+    isLoadingUser,
+    submitForm
   }
 }

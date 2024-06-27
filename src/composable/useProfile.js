@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 import utils from '@/utils.js'
 
@@ -7,10 +7,11 @@ export const useProfile = () => {
   const user = ref(null)
   const errors = ref([])
   const isLoading = ref(true)
-  const { token } = useTokenStore()
+  const { getToken } = useToken()
   const posts = ref([])
 
-  const getUserProfile = async (username, hashtag = '') => {
+  const getUserProfile = async (username) => {
+    const token = await getToken()
     const { data, error } = await useFetch(
       'get',
       `user/${username}`,
@@ -20,22 +21,8 @@ export const useProfile = () => {
         'Content-Type': 'application/json'
       }
     )
-    if (data.value) {
-      const postsResponse = await useFetch(
-        'get',
-        `posts?author=${username}&${hashtag ? 'hashtag=' + hashtag : ''}`,
-        {},
-        {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      )
-      if (postsResponse.error.value.length === 0)
-        posts.value = postsResponse.data.value.items.map((item) => utils.toCamel(item))
-      errors.value = postsResponse.error.value
-    }
     if (error.value.length === 0) user.value = utils.toCamel(data.value)
-    errors.value = errors.value.concat(error.value)
+    errors.value = error.value
     isLoading.value = false
   }
 

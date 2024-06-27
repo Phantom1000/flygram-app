@@ -31,9 +31,15 @@
         </div>
       </div>
       <div class="col-md-4">
-        <button @click="removeFriend" v-if="user.isFriend" class="btn btn-danger fly-btn">
-          Удалить из друзей
-        </button>
+        <template v-if="user.isFriend">
+          <RouterLink
+            class="btn btn-success fly-btn mb-2"
+            :to="{ name: 'messages', params: { username: user.username } }"
+            >Написать</RouterLink
+          >
+          <button @click="removeFriend" class="btn btn-danger fly-btn">Удалить из друзей</button>
+        </template>
+
         <button @click="removeFriend" v-else-if="user.isFollower" class="btn btn-danger fly-btn">
           Отменить заявку
         </button>

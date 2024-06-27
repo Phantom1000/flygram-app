@@ -1,7 +1,7 @@
 <template>
   <SpinnerComponent v-if="isLoading" />
   <UserFormComponent
-    v-else
+    v-else-if="currentUser"
     v-model:username="username"
     v-model:firstname="firstname"
     v-model:lastname="lastname"
@@ -14,9 +14,11 @@
     v-model:hobbies="hobbies"
     v-model:dateBirth="dateBirth"
     v-model:avatar="avatar"
+    v-model:skills="skills"
     v-model:errors="errors"
+    :is-loading="isLoadingUser"
     button-label="Сохранить изменения"
-    @submit-form="sumbitForm"
+    @submit-form="submitForm"
   ></UserFormComponent>
 </template>
 
@@ -44,8 +46,10 @@ const {
   hobbies,
   dateBirth,
   avatar,
+  skills,
   errors,
-  sumbitForm
+  isLoadingUser,
+  submitForm
 } = useUserForm(currentUser)
 
 watchEffect(() => {
@@ -60,6 +64,7 @@ watchEffect(() => {
     address.value = currentUser.value.address || ''
     education.value = currentUser.value.education || ''
     career.value = currentUser.value.career || ''
+    skills.value = currentUser.value.skills || ''
     hobbies.value = currentUser.value.hobbies || ''
     dateBirth.value = currentUser.value.dateBirth || ''
   }

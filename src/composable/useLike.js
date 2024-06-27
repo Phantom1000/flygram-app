@@ -1,12 +1,13 @@
 import { ref } from 'vue'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 
 export const useLike = () => {
   const errors = ref([])
-  const { token } = useTokenStore()
+  const { getToken } = useToken()
 
   const like = async (post) => {
+    const token = await getToken()
     const { error } = await useFetch(
       'post',
       `like/${post.id}`,
@@ -20,6 +21,7 @@ export const useLike = () => {
   }
 
   const unlike = async (post) => {
+    const token = await getToken()
     const { error } = await useFetch(
       'delete',
       `like/${post.id}`,

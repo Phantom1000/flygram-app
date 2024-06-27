@@ -1,55 +1,63 @@
 <template>
   <article class="mb-4 card post-article p-3">
-    <img
-      :src="API_URL + props.post.links.image"
-      class="card-img-top"
-      v-if="props.post.links.image"
-    />
-    <div class="card-body">
-      <div class="card-title d-flex justify-content-between">
-        <div>
-          <RouterLink
-            v-for="hashtag in hashtags"
-            :key="hashtag"
-            :to="{ name: 'posts', query: { hashtag: hashtag } }"
-            class="ms-2"
-            >#{{ hashtag }}</RouterLink
-          >
+    <PostFormComponent
+      :post="props.post"
+      @update-post="updatePost"
+      @cancel="isEdited = false"
+      v-if="isEdited"
+    ></PostFormComponent>
+    <template v-else>
+      <img
+        :src="API_URL + props.post.links.image"
+        class="card-img-top"
+        v-if="props.post.links.image"
+      />
+      <div class="card-body">
+        <div class="card-title d-flex justify-content-between">
+          <div>
+            <RouterLink
+              v-for="hashtag in hashtags"
+              :key="hashtag"
+              :to="{ name: 'posts', query: { hashtag: hashtag } }"
+              class="ms-2"
+              >#{{ hashtag }}</RouterLink
+            >
+          </div>
+
+          <time class="post-time" :datetime="props.post.publicationDate">{{ datetime }}</time>
         </div>
 
-        <time class="post-time" :datetime="props.post.publicationDate">{{ datetime }}</time>
-      </div>
-
-      <p class="card-text mb-2">
-        <RouterLink :to="{ name: 'profile', params: { username: props.post.author } }">{{
-          props.post.author
-        }}</RouterLink
-        >: {{ props.post.text }}
-      </p>
-      <div class="d-flex justify-content-between mt-4">
-        <div>
-          <FontAwesomeIcon
-            @click="likePost"
-            class="like-icon like mx-2"
-            :class="{ liked, 'like-animation': animate }"
-            :icon="faHeart"
-            ref="likeIcon"
-          ></FontAwesomeIcon>
-          {{ likesCount }}
-        </div>
-        <div>
-          <template v-if="route.name == 'profile' && props.post.author == currentUser.username">
-            <button class="btn btn-primary btn-sm me-3" @click="editPost">
-              <FontAwesomeIcon class="me-2" :icon="faPenToSquare"></FontAwesomeIcon>Изменить
-            </button>
-            <button class="btn btn-danger btn-sm me-3" @click="deletePost">
-              <FontAwesomeIcon class="me-2" :icon="faTrash"></FontAwesomeIcon>Удалить
-            </button>
-          </template>
-          <RouterLink :to="{ name: 'post', params: { id: props.post.id } }">Подробнее</RouterLink>
+        <p class="card-text mb-2">
+          <RouterLink :to="{ name: 'profile', params: { username: props.post.author } }">{{
+            props.post.author
+          }}</RouterLink
+          >: {{ props.post.text }}
+        </p>
+        <div class="d-flex justify-content-between mt-4">
+          <div>
+            <FontAwesomeIcon
+              @click="likePost"
+              class="like-icon like mx-2"
+              :class="{ liked, 'like-animation': animate }"
+              :icon="faHeart"
+              ref="likeIcon"
+            ></FontAwesomeIcon>
+            {{ likesCount }}
+          </div>
+          <div>
+            <template v-if="route.name == 'profile' && props.post.author == currentUser.username">
+              <button class="btn btn-primary btn-sm me-3" @click="editPost">
+                <FontAwesomeIcon class="me-2" :icon="faPenToSquare"></FontAwesomeIcon>Изменить
+              </button>
+              <button class="btn btn-danger btn-sm me-3" @click="deletePost">
+                <FontAwesomeIcon class="me-2" :icon="faTrash"></FontAwesomeIcon>Удалить
+              </button>
+            </template>
+            <RouterLink :to="{ name: 'post', params: { id: props.post.id } }">Подробнее</RouterLink>
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </article>
 </template>
 
@@ -65,6 +73,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { useRoute } from 'vue-router'
 import config from '@/config'
 import { useUserStore } from '@/store/user'
+import PostFormComponent from '@/components/posts/PostFormComponent.vue'
 
 const { currentUser } = useUserStore()
 const API_URL = config.apiUrl
@@ -76,7 +85,9 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['editPost', 'deletePost'])
+const emit = defineEmits(['updatePost', 'deletePost'])
+
+const isEdited = ref(false)
 
 const { like, unlike } = useLike()
 const route = useRoute()
@@ -109,7 +120,12 @@ const likePost = () => {
 }
 
 const editPost = () => {
-  emit('editPost', props.post)
+  isEdited.value = true
+}
+
+const updatePost = (post) => {
+  isEdited.value = false
+  emit('updatePost', post)
 }
 
 const deletePost = async () => {

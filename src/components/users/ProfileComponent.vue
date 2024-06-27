@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <SpinnerComponent v-if="isLoading" />
-    <div class="row" v-else>
+    <div class="row" v-else-if="currentUser">
       <h1 class="text-center ms-3 my-3">
         {{ errors && errors.length > 0 ? errors[0] : route.params.username }}
       </h1>
@@ -62,9 +62,16 @@
             class="col-lg-8 mt-4"
             v-if="currentUser && currentUser.username !== route.params.username"
           >
-            <button @click="removeFriend" v-if="user.isFriend" class="btn btn-danger fly-btn">
-              Удалить из друзей
-            </button>
+            <template v-if="user.isFriend">
+              <RouterLink
+                class="btn btn-success fly-btn me-2"
+                :to="{ name: 'messages', params: { username: user.username } }"
+                >Написать</RouterLink
+              >
+              <button @click="removeFriend" class="btn btn-danger fly-btn">
+                Удалить из друзей
+              </button>
+            </template>
             <button
               @click="removeFriend"
               v-else-if="user.isFollower"
@@ -117,16 +124,16 @@
           <PostFormComponent
             id="postForm"
             v-if="currentUser && currentUser.username === route.params.username"
-            :post="updatedPost"
-            @update-posts="updatePosts"
+            :post="null"
+            @add-post="addPost"
           ></PostFormComponent>
           <h2 class="text-center mb-3">
             {{ posts.length > 0 ? 'Записи пользователя' : 'Пока нет записей' }}
           </h2>
           <PostComponent
-            @edit-post="editPost"
+            v-for="(post, index) in posts"
+            @update-post="(post) => updatePost(index, post)"
             @delete-post="deletePost"
-            v-for="post in posts"
             :key="post.id"
             :post="post"
           ></PostComponent>
@@ -150,9 +157,14 @@ import config from '@/config'
 import PostComponent from '@/components/posts/PostComponent.vue'
 import PostFormComponent from '@/components/posts/PostFormComponent.vue'
 import { useUserActions } from '@/composable/useUserActions.js'
+import { usePosts } from '@/composable/usePosts'
+import { useLoading } from '@/composable/useLoading'
 
 const { currentUser } = storeToRefs(useUserStore())
-const { user, posts, getUserProfile, isLoading, errors } = useProfile()
+const { user, getUserProfile, isLoading, errors } = useProfile()
+const { posts, meta, getPosts, isLoadingPosts } = usePosts()
+const currentPage = ref(1)
+
 const route = useRoute()
 const API_URL = config.apiUrl
 watch(errors, () => {
@@ -161,7 +173,21 @@ watch(errors, () => {
 
 watchEffect(() => {
   getUserProfile(route.params.username)
+  posts.value = []
+  getPosts(1, null, null, null, route.params.username, null)
 })
+
+useLoading(
+  currentPage,
+  getPosts,
+  isLoadingPosts,
+  meta,
+  null,
+  null,
+  null,
+  route.params.username,
+  null
+)
 
 const { addFriend, removeFriend, acceptFriend } = useUserActions(user)
 const updatedPost = ref(null)
@@ -186,15 +212,13 @@ const deletePost = (post) => {
   posts.value = posts.value.filter((el) => el !== post)
 }
 
-const editPost = (post) => {
-  location.hash = ''
-  location.hash = 'postForm'
-  updatedPost.value = post
+const updatePost = (index, data) => {
+  posts.value[index] = data
 }
 
-const updatePosts = () => {
+const addPost = (post) => {
   updatedPost.value = null
-  getUserProfile(route.params.username)
+  posts.value.unshift(post)
 }
 </script>
 

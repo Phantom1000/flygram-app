@@ -9,7 +9,7 @@
       <div class="alert alert-danger text-start" v-if="errors.length > 0">
         {{ errors[0] }}
       </div>
-      <template v-else>
+      <template v-else-if="currentUser">
         <div class="col-md-12 col-lg-9">
           <ul class="nav d-flex justify-content-center">
             <li class="nav-item">
@@ -42,6 +42,14 @@
                   query: { type: 'following' }
                 }"
                 >Подписки</RouterLink
+              >
+            </li>
+            <li class="nav-item">
+              <RouterLink
+                class="nav-link"
+                exact-active-class="active"
+                :to="{ name: 'users', query: { type: 'recommended' } }"
+                >Рекомендации</RouterLink
               >
             </li>
             <li class="nav-item">
@@ -130,16 +138,17 @@ const route = useRoute()
 
 // getUsers()
 watchEffect(() => {
-  getUsers(
-    route.params.username,
-    route.query.type,
-    route.query.page,
-    firstname.value,
-    lastname.value,
-    city.value,
-    education.value,
-    career.value
-  )
+  getUsers({
+    username: route.params.username,
+    communityId: route.params.id,
+    type: route.query.type,
+    page: route.query.page,
+    firstname: firstname.value,
+    lastname: lastname.value,
+    city: city.value,
+    education: education.value,
+    career: career.value
+  })
 })
 </script>
 

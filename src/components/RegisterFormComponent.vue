@@ -14,9 +14,11 @@
     v-model:hobbies="hobbies"
     v-model:dateBirth="dateBirth"
     v-model:avatar="avatar"
+    v-model:skills="skills"
     v-model:errors="errors"
+    :is-loading="isLoadingUser"
     button-label="Зарегистрироваться"
-    @submit-form="sumbitForm"
+    @submit-form="submitForm"
   ></UserFormComponent>
 </template>
 
@@ -39,8 +41,10 @@ const {
   hobbies,
   dateBirth,
   avatar,
+  skills,
   errors,
-  sumbitForm
+  isLoadingUser,
+  submitForm
 } = useUserForm()
 </script>
 

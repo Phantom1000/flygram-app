@@ -1,9 +1,11 @@
 import { useFetch } from '@/composable/useFetch'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 
 export const useUserActions = (user) => {
+  const { getToken } = useToken()
+
   const addFriend = async () => {
-    const { token } = useTokenStore()
+    const token = await getToken()
     const { error } = await useFetch(
       'post',
       `friends/${user.value.username}`,
@@ -21,7 +23,7 @@ export const useUserActions = (user) => {
   }
 
   const removeFriend = async () => {
-    const { token } = useTokenStore()
+    const token = await getToken()
     const { error } = await useFetch(
       'delete',
       `friends/${user.value.username}`,
@@ -42,14 +44,11 @@ export const useUserActions = (user) => {
         user.value.followersCount--
         user.value.isFollower = false
       }
-      //   user.value.isFriend = false
-      //   user.value.isFollowing = false
-      //   user.value.isFollower = false
     }
   }
 
   const acceptFriend = async () => {
-    const { token } = useTokenStore()
+    const token = await getToken()
     const { error } = await useFetch(
       'put',
       `friends/${user.value.username}`,

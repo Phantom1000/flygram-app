@@ -1,20 +1,24 @@
 import { ref } from 'vue'
-import { useTokenStore } from '@/store/token'
+import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 import utils from '@/utils.js'
 
 export const usePosts = () => {
   const posts = ref([])
   const errors = ref([])
-  const isLoading = ref(true)
+  const isLoadingPosts = ref(true)
   const meta = ref(null)
-  const { token } = useTokenStore()
+  const { getToken } = useToken()
 
-  const getPosts = async (hashtag, type, page) => {
+  const getPosts = async (page, hashtag, type, search, author, community, reload = false) => {
     const params = new URLSearchParams()
-    if (hashtag) params.append('hashtag', hashtag)
-    if (type) params.append('type', type)
+    if (hashtag && hashtag.value) params.append('hashtag', hashtag.value)
+    if (type && type.value) params.append('type', type.value)
     if (page) params.append('page', page)
+    if (author) params.append('author', author)
+    if (community) params.append('community', community)
+    if (search && search.value) params.append('search', search.value)
+    const token = await getToken()
     const { data, error } = await useFetch(
       'get',
       `posts?${params.toString()}`,
@@ -26,11 +30,12 @@ export const usePosts = () => {
     )
     errors.value = error.value
     if (error.value.length === 0) {
-      posts.value = data.value.items.map((item) => utils.toCamel(item))
+      if (reload) posts.value = data.value.items.map((item) => utils.toCamel(item))
+      else posts.value = posts.value.concat(data.value.items.map((item) => utils.toCamel(item)))
       meta.value = utils.toCamel(data.value.meta)
     }
-    isLoading.value = false
+    isLoadingPosts.value = false
   }
 
-  return { posts, meta, errors, getPosts, isLoading }
+  return { posts, meta, errors, getPosts, isLoadingPosts }
 }

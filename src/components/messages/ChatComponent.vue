@@ -1,0 +1,80 @@
+<template>
+  <section class="container">
+    <SpinnerComponent v-if="isLoadingMessages" />
+    <div class="row justify-content-center d-flex align-items-center" v-else>
+      <h1 class="text-center ms-3 my-3">
+        {{ errors && errors.length > 0 ? errors[0] : `Сообщения ${route.params.username}` }}
+      </h1>
+      <div class="alert alert-danger text-start" v-if="errors && errors.length > 0">
+        <ul>
+          <li v-for="(error, index) in errors" :key="index">
+            {{ error }}
+          </li>
+        </ul>
+      </div>
+      <template v-else-if="currentUser">
+        <div class="col-md-12 col-lg-9">
+          <div class="row mt-3 align-items-center message-container">
+            <div class="col-md-9">
+              <div class="d-flex flex-column">
+                <MessageComponent
+                  v-for="message in reversedMessages"
+                  :key="message.id"
+                  :message="message"
+                ></MessageComponent>
+              </div>
+              <MessageFormComponent
+                id="messageForm"
+                @add-message="addMessage"
+              ></MessageFormComponent>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { watchEffect, ref, computed } from 'vue'
+import { useLoading } from '@/composable/useLoading'
+import { useMessages } from '@/composable/useMessages'
+import SpinnerComponent from '@/components/SpinnerComponent.vue'
+import { useRoute } from 'vue-router'
+import MessageComponent from '@/components/messages/MessageComponent.vue'
+import MessageFormComponent from '@/components/messages/MessageFormComponent.vue'
+import { useUserStore } from '@/store/user'
+import { storeToRefs } from 'pinia'
+
+const { currentUser } = storeToRefs(useUserStore())
+
+const { messages, meta, getMessages, isLoadingMessages, errors } = useMessages()
+const route = useRoute()
+const currentPage = ref(1)
+const reversedMessages = computed(() => messages.value.toReversed())
+
+watchEffect(() => {
+  currentPage.value = 1
+  messages.value = []
+  getMessages(1, route.params.username, true)
+})
+
+const addMessage = (message) => {
+  messages.value.unshift(message)
+}
+
+useLoading(currentPage, getMessages, isLoadingMessages, meta, route.params.username)
+</script>
+
+<style>
+.message-container {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.observer {
+  height: 30px;
+  background: green;
+}
+</style>

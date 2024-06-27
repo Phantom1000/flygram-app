@@ -1,116 +1,101 @@
 <template>
   <form
     class="text-center w-100 mb-5"
-    @submit.prevent="addPost"
+    @submit.prevent="sendPost"
     novalidate
     enctype="multipart/form-data"
   >
     <div class="mb-2">
       <label for="postHashtags" class="form-label" v-show="false">Хэштеги</label>
-      <input
-        type="text"
-        :class="[
-          'form-control',
-          {
-            'is-invalid': errors.hashtags && errors.hashtags.length > 0
-          }
-        ]"
+      <input-component
         id="postHashtags"
-        v-model="hashtags"
-        maxlength="100"
         placeholder="Хэштеги"
-        aria-describedby="hashtagsHelp"
-      />
-      <div id="hashtagsHelp" class="form-text text-start mb-2">Введите хэштеги через запятую</div>
-      <template v-if="errors.hashtags && errors.hashtags.length > 0">
-        <div
-          class="invalid-feedback text-start mb-2"
-          v-for="(error, index) in errors.hashtags"
-          :key="index"
-        >
-          {{ error }}
-        </div>
-      </template>
+        v-model="hashtags"
+        autocomplete="username"
+        :focus="true"
+        :errors="errors.hashtags ?? []"
+        described="Введите хэштеги через запятую"
+      ></input-component>
     </div>
     <div class="mb-2">
-      <label for="postBody" class="form-label" v-show="false">Текст</label>
-      <textarea
-        :class="[
-          'form-control',
-          {
-            'is-invalid': errors.text && errors.text.length > 0
-          }
-        ]"
-        id="postBody"
+      <label for="postText" class="form-label" v-show="false">Текст</label>
+      <textarea-component
+        id="postText"
         v-model="text"
         placeholder="Что у Вас нового?"
-        maxlength="500"
-        required
-        rows="3"
-      ></textarea>
-      <template v-if="errors.text && errors.text.length > 0">
-        <div
-          class="invalid-feedback text-start mb-2"
-          v-for="(error, index) in errors.text"
-          :key="index"
-        >
-          {{ error }}
-        </div>
-      </template>
+        :errors="errors.text ?? []"
+      ></textarea-component>
     </div>
     <div class="mb-2">
-      <input
-        type="file"
-        :class="[
-          'form-control',
-          {
-            'is-invalid': errors.image && errors.image.length > 0
-          }
-        ]"
+      <file-component
         id="postImage"
         placeholder="Загрузите изображение"
-        @change="onImageChanged"
-        accept="image/*"
-        aria-describedby="imageHelp"
-      />
-      <div id="imageHelp" class="form-text text-start mb-2">Загрузите изображение</div>
+        @file-change="onImageChanged"
+        :errors="errors.image ?? []"
+        label="Загрузите изображение"
+        described="Загрузите изображение"
+      ></file-component>
     </div>
-    <button type="submit" class="w-100 btn btn-success">Опубликовать</button>
+    <div class="col-lg-12 d-flex mt-3">
+      <button-component type="submit" class="w-100 btn-success" :is-loading="isLoading">
+        {{ props.post === null ? 'Опубликовать' : 'Сохранить' }}
+      </button-component>
+      <button class="w-100 btn btn-danger ms-4" @click="emit('cancel')" v-if="props.post !== null">
+        Отмена
+      </button>
+    </div>
   </form>
 </template>
 
 <script setup>
-import { toRefs } from 'vue'
+import { watch } from 'vue'
 import { usePostForm } from '@/composable/usePostForm.js'
 import { watchEffect } from 'vue'
 
 const props = defineProps({
   post: {
     required: true
+  },
+  community: {
+    required: false
   }
 })
 
-const { post } = toRefs(props)
-const { hashtags, text, image, submitForm, errors } = usePostForm()
+const { hashtags, text, image, submitForm, errors, isLoading } = usePostForm(props.post)
 
-const emit = defineEmits(['updatePosts'])
+const emit = defineEmits(['addPost', 'updatePost', 'cancel'])
 
 watchEffect(() => {
-  if (post.value) {
-    hashtags.value = post.value.hashtags
-    text.value = post.value.text
+  if (props.post) {
+    hashtags.value = props.post.hashtags
+    text.value = props.post.text
   }
 })
 
-const addPost = async () => {
-  await submitForm(post.value)
-  emit('updatePosts')
-}
-
-const onImageChanged = (event) => {
-  const target = event.target
-  if (target && target.files) {
-    image.value = target.files[0]
+const sendPost = async () => {
+  const newPost = await submitForm(props.post, props.community)
+  if (newPost) {
+    if (props.post !== null) {
+      emit('updatePost', newPost)
+    } else {
+      emit('addPost', newPost)
+    }
   }
 }
+
+const onImageChanged = (file) => (image.value = file)
+
+watch(errors, () => {
+  if (errors.value.length > 0) {
+    document.getElementById('postHashtags').focus()
+  } else {
+    Object.keys(errors.value).forEach((keyError) => {
+      if (errors.value[keyError].length > 0) {
+        document
+          .getElementById(`post${keyError.charAt(0).toUpperCase() + keyError.slice(1)}`)
+          .focus()
+      }
+    })
+  }
+})
 </script>

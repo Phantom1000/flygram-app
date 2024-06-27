@@ -26,9 +26,7 @@
             <div class="row mb-3" v-if="props.user.dateBirth">
               <p>
                 Дата рождения:
-                <time :datetime="props.user.dateBirth">{{
-                  utils.formatDate(props.user.dateBirth) ?? ''
-                }}</time>
+                <time :datetime="props.user.dateBirth">{{ datetime }}</time>
               </p>
             </div>
             <div class="row mb-3" v-if="props.user.city">
@@ -52,7 +50,10 @@
             <div class="row mb-3" v-if="props.user.education">
               <p>Образование: {{ props.user.education ?? '' }}</p>
             </div>
-            <div class="row mb-3" v-if="user.hobbies">
+            <div class="row mb-3" v-if="props.user.skills">
+              <p>Навыки: {{ props.user.skills ?? '' }}</p>
+            </div>
+            <div class="row mb-3" v-if="props.user.hobbies">
               <p>Увлечения: {{ props.user.hobbies ?? '' }}</p>
             </div>
           </div>
@@ -63,7 +64,7 @@
 </template>
 
 <script setup>
-import utils from '@/utils.js'
+import { computed } from 'vue'
 
 const props = defineProps({
   user: {
@@ -71,4 +72,10 @@ const props = defineProps({
     type: Object
   }
 })
+
+const datetime = computed(() =>
+  new Intl.DateTimeFormat('ru', {
+    dateStyle: 'medium'
+  }).format(new Date(props.user.dateBirth))
+)
 </script>

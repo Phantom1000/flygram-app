@@ -16,35 +16,35 @@ import HeaderComponent from '@/components/HeaderComponent.vue'
 import FlashToastComponent from '@/components/FlashToastComponent.vue'
 import FooterComponent from '@/components/FooterComponent.vue'
 import { useUserStore } from '@/store/user'
-import { useTokenStore } from '@/store/token'
-import { useFetch } from '@/composable/useFetch'
+import { useToken } from '@/composable/useToken'
+import config from '@/config'
+import axios from 'axios'
 import router from './router'
 
-const { token } = useTokenStore()
-const { currentUser, setCurrentUser } = useUserStore()
+//const { token } = useTokenStore()
+const { setToken, removeToken } = useToken()
+
+const { setCurrentUser } = useUserStore()
 
 const loadCurrentUser = async () => {
-  if (token) {
-    const { data } = await useFetch(
-      'get',
-      'user/current',
-      {},
-
-      {
-        Authorization: `Bearer ${token}`
-      }
-    )
-    if (data.value) {
-      setCurrentUser(data.value)
+  try {
+    const response = await axios.get(`${config.apiUrl}/api/token`, { withCredentials: true })
+    const data = response.data
+    if (data.user && data.token) {
+      setCurrentUser(data.user)
+      setToken(data.token)
     } else {
       router.replace({ name: 'logout' })
     }
+  } catch (err) {
+    setCurrentUser(null)
+    await setToken(null)
+    await removeToken(null)
+    //router.replace({ name: 'login' })
   }
 }
 
-if (!currentUser) {
-  loadCurrentUser()
-}
+loadCurrentUser()
 </script>
 
 <style>
