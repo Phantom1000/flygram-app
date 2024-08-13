@@ -14,7 +14,7 @@ export const useProfile = () => {
     const token = await getToken()
     const { data, error } = await useFetch(
       'get',
-      `user/${username}`,
+      `users/${username}`,
       {},
       {
         Authorization: `Bearer ${token}`,

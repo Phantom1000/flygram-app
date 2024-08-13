@@ -81,7 +81,7 @@
             id="floatingEmail"
             placeholder="Ваш email"
             v-model="email"
-            autocomplete="family-name"
+            autocomplete="email"
             described="Email должен состоять из 5–100 символов."
             :errors="errors.email ?? []"
             label="Ваш email"

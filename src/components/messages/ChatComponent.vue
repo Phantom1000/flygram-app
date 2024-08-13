@@ -23,10 +23,7 @@
                   :message="message"
                 ></MessageComponent>
               </div>
-              <MessageFormComponent
-                id="messageForm"
-                @add-message="addMessage"
-              ></MessageFormComponent>
+              <MessageFormComponent id="messageForm" :socket="socket"></MessageFormComponent>
             </div>
           </div>
         </div>
@@ -36,7 +33,7 @@
 </template>
 
 <script setup>
-import { watchEffect, ref, computed } from 'vue'
+import { watchEffect, ref, computed, onMounted, onUnmounted } from 'vue'
 import { useLoading } from '@/composable/useLoading'
 import { useMessages } from '@/composable/useMessages'
 import SpinnerComponent from '@/components/SpinnerComponent.vue'
@@ -45,6 +42,9 @@ import MessageComponent from '@/components/messages/MessageComponent.vue'
 import MessageFormComponent from '@/components/messages/MessageFormComponent.vue'
 import { useUserStore } from '@/store/user'
 import { storeToRefs } from 'pinia'
+import { io } from 'socket.io-client'
+import config from '@/config'
+import utils from '@/utils.js'
 
 const { currentUser } = storeToRefs(useUserStore())
 
@@ -52,6 +52,8 @@ const { messages, meta, getMessages, isLoadingMessages, errors } = useMessages()
 const route = useRoute()
 const currentPage = ref(1)
 const reversedMessages = computed(() => messages.value.toReversed())
+const socket = io(config.apiUrl + '/chat')
+socket.off()
 
 watchEffect(() => {
   currentPage.value = 1
@@ -59,9 +61,25 @@ watchEffect(() => {
   getMessages(1, route.params.username, true)
 })
 
-const addMessage = (message) => {
-  messages.value.unshift(message)
-}
+onMounted(() => {
+  socket.connect()
+  socket.on('connect', () => {
+    socket.emit('joined', { sender: currentUser.value.username, recipient: route.params.username })
+  })
+  socket.on('message', (response) => {
+    messages.value.unshift(utils.toCamel(response.data_message))
+  })
+})
+
+onUnmounted(() => {
+  socket.emit(
+    'left',
+    { sender: currentUser.value.username, recipient: route.params.username },
+    () => {
+      socket.disconnect()
+    }
+  )
+})
 
 useLoading(currentPage, getMessages, isLoadingMessages, meta, route.params.username)
 </script>

@@ -13,7 +13,7 @@ export const usePost = () => {
     const token = await getToken()
     const { data, error } = await useFetch(
       action,
-      `post/${id}`,
+      `posts/${id}`,
       {},
       {
         Authorization: `Bearer ${token}`,

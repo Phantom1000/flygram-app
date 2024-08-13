@@ -96,10 +96,8 @@
             role="group"
           >
             <div class="row mb-3 col-md-6">
-              <RouterLink
-                :to="{ name: 'change-password', params: { username: currentUser.username } }"
-                class="btn btn-success"
-                >Сменить пароль</RouterLink
+              <RouterLink :to="{ name: 'security' }" class="btn btn-primary"
+                >Безопасность</RouterLink
               >
             </div>
             <div class="row mb-3 col-md-6">
@@ -107,13 +105,6 @@
                 :to="{ name: 'edit-profile', params: { username: currentUser.username } }"
                 class="btn btn-primary"
                 >Редактировать профиль</RouterLink
-              >
-            </div>
-            <div class="row col-md-6">
-              <RouterLink
-                :to="{ name: 'delete-profile', params: { username: currentUser.username } }"
-                class="btn btn-danger"
-                >Удалить аккаунт</RouterLink
               >
             </div>
           </div>

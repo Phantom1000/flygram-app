@@ -10,7 +10,7 @@ export const useLike = () => {
     const token = await getToken()
     const { error } = await useFetch(
       'post',
-      `like/${post.id}`,
+      `likes/${post.id}`,
       {},
       {
         Authorization: `Bearer ${token}`,
@@ -24,7 +24,7 @@ export const useLike = () => {
     const token = await getToken()
     const { error } = await useFetch(
       'delete',
-      `like/${post.id}`,
+      `likes/${post.id}`,
       {},
       {
         Authorization: `Bearer ${token}`,

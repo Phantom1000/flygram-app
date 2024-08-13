@@ -275,11 +275,9 @@ export const useUserForm = (user = null) => {
   }
 
   const submitForm = async () => {
-    console.log('asdasd')
     if (validateForm()) {
       errors.value = []
       isLoadingUser.value = true
-      //const { token } = useTokenStore()
       const token = await getToken()
       const userData = new FormData()
       userData.append('username', username.value)
@@ -300,7 +298,7 @@ export const useUserForm = (user = null) => {
       }
       const { data, error } = await useFetch(
         user === null ? 'post' : 'put',
-        user === null ? 'users' : `user/${user.value.username}`,
+        user === null ? 'users' : `users/${user.value.username}`,
         userData,
         {
           Authorization: `Bearer ${token}`,

@@ -13,7 +13,7 @@ export const useComment = () => {
     const token = await getToken()
     const { data, error } = await useFetch(
       action,
-      `comment/${id}`,
+      `comments/${id}`,
       {},
       {
         Authorization: `Bearer ${token}`,

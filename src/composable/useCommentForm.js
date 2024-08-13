@@ -49,7 +49,7 @@ export const useCommentForm = (comment = null) => {
       }
       const { data, error } = await useFetch(
         comment === null ? 'post' : 'put',
-        comment === null ? 'comments' : `comment/${comment.id}`,
+        comment === null ? 'comments' : `comments/${comment.id}`,
         postData,
         {
           Authorization: `Bearer ${token}`,

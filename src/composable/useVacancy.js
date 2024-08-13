@@ -13,7 +13,7 @@ export const useVacancy = () => {
     const token = await getToken()
     const { data, error } = await useFetch(
       action,
-      `vacancy/${id}`,
+      `vacancies/${id}`,
       {},
       {
         Authorization: `Bearer ${token}`,

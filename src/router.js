@@ -9,6 +9,7 @@ import CommunityFormComponent from '@/components/communities/CommunityFormCompon
 import VacancyFormComponent from '@/components/vacancies/VacancyFormComponent.vue'
 import EditProfileComponent from '@/components/users/EditProfileComponent.vue'
 import ChangePasswordForm from '@/components/users/ChangePasswordForm.vue'
+import SecurityComponent from '@/components/users/SecurityComponent.vue'
 import CommunityPageComponent from '@/components/communities/CommunityPageComponent.vue'
 import ChatComponent from '@/components/messages/ChatComponent.vue'
 import VacancyListComponent from '@/components/vacancies/VacancyListComponent.vue'
@@ -19,6 +20,9 @@ import { useUserStore } from '@/store/user'
 import { createWebHistory, createRouter } from 'vue-router'
 import config from '@/config'
 import { useFetch } from '@/composable/useFetch'
+import PasswordResetEmailForm from './components/users/PasswordResetEmailForm.vue'
+import PasswordResetForm from './components/users/PasswordResetForm.vue'
+import TwoFactorForm from './components/users/TwoFactorForm.vue'
 
 const routes = [
   {
@@ -123,6 +127,30 @@ const routes = [
     component: VacancyPageComponent,
     name: 'vacancy',
     meta: { title: 'Вакансия', requiresAuth: true }
+  },
+  {
+    path: '/reset-password',
+    component: PasswordResetEmailForm,
+    name: 'resetPassword',
+    meta: { title: 'Сброс пароля' }
+  },
+  {
+    path: '/set-new-password',
+    component: PasswordResetForm,
+    name: 'setNewPassword',
+    meta: { title: 'Сброс пароля' }
+  },
+  {
+    path: '/security',
+    component: SecurityComponent,
+    name: 'security',
+    meta: { title: 'Безопасность', requiresAuth: true }
+  },
+  {
+    path: '/two-factor',
+    component: TwoFactorForm,
+    name: 'two-factor',
+    meta: { title: 'Вход' }
   }
 ]
 
@@ -165,6 +193,24 @@ router.addRoute({
     await setToken(null)
     await removeToken(null)
     router.replace({ name: 'login' })
+  }
+})
+
+router.addRoute({
+  path: '/verify-email',
+  name: 'verify-email',
+  beforeEnter: async () => {
+    const { getToken } = useToken()
+    const token = await getToken()
+    await useFetch(
+      'post',
+      'email',
+      {},
+      {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    )
   }
 })
 

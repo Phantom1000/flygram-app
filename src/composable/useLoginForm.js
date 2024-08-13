@@ -3,6 +3,7 @@ import { useToken } from '@/composable/useToken'
 import { useUserStore } from '@/store/user'
 import { useRouter, useRoute } from 'vue-router'
 import { useFetch } from '@/composable/useFetch'
+import { useTwoFactorToken } from '@/store/twoFactorToken'
 import utils from '@/utils.js'
 
 export const useLoginForm = () => {
@@ -13,6 +14,7 @@ export const useLoginForm = () => {
   const isLoading = ref(false)
   const router = useRouter()
   const route = useRoute()
+  const { setTwoFactorToken } = useTwoFactorToken()
 
   const validateUsername = () => {
     errors.value.username = []
@@ -74,18 +76,26 @@ export const useLoginForm = () => {
       { 'Content-Type': 'application/json' }
     )
     if (data.value) {
-      const { setToken } = useToken()
-      const { setCurrentUser } = useUserStore()
-      const token = data.value.accessToken
-      const user = data.value.user
-      if (token) {
-        setToken(token, rememberMe.value)
-      }
-      if (user) {
-        setCurrentUser(user)
-      }
+      if (data.value.accessToken) {
+        const { setToken } = useToken()
+        const { setCurrentUser } = useUserStore()
+        const token = data.value.accessToken
+        const user = data.value.user
+        if (token) {
+          setToken(token, rememberMe.value)
+        }
+        if (user) {
+          setCurrentUser(user)
+        }
 
-      router.replace(route.query.redirect ? route.query.redirect : { name: 'posts' })
+        router.replace(route.query.redirect ? route.query.redirect : { name: 'posts' })
+      } else {
+        setTwoFactorToken(data.value.token)
+        router.replace({
+          name: 'two-factor',
+          query: { redirect: route.query.redirect, rememberMe: rememberMe.value }
+        })
+      }
     }
     errors.value = error.value
     isLoading.value = false

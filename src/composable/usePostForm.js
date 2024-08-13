@@ -71,7 +71,7 @@ export const usePostForm = () => {
 
       const { data, error } = await useFetch(
         post === null ? 'post' : 'put',
-        post === null ? 'posts' : `post/${post.id}`,
+        post === null ? 'posts' : `posts/${post.id}`,
         postData,
         {
           Authorization: `Bearer ${token}`,

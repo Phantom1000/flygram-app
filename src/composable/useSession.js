@@ -3,17 +3,17 @@ import { useToken } from '@/composable/useToken'
 import { useFetch } from '@/composable/useFetch'
 import utils from '@/utils.js'
 
-export const useCommunity = () => {
-  const community = ref(null)
+export const useSession = () => {
+  const session = ref(null)
   const errors = ref([])
-  const isLoadingCommunity = ref(true)
+  const isLoadingSession = ref(true)
   const { getToken } = useToken()
 
-  const fetchCommunity = async (id, action) => {
+  const fetchSession = async (id, action) => {
     const token = await getToken()
     const { data, error } = await useFetch(
       action,
-      `communities/${id}`,
+      `sessions/${id}`,
       {},
       {
         Authorization: `Bearer ${token}`,
@@ -21,9 +21,9 @@ export const useCommunity = () => {
       }
     )
     errors.value = error.value
-    if (error.value.length === 0) community.value = utils.toCamel(data.value)
-    isLoadingCommunity.value = false
+    if (error.value.length === 0) session.value = utils.toCamel(data.value)
+    isLoadingSession.value = false
   }
 
-  return { community, errors, fetchCommunity, isLoadingCommunity }
+  return { session, errors, fetchSession, isLoadingSession }
 }

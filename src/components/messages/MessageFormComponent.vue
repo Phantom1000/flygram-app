@@ -18,7 +18,7 @@
       ></textarea-component>
     </div>
     <div class="col-lg-12 d-flex mt-3">
-      <button-component type="submit" class="w-100 btn-success" :is-loading="isLoading">
+      <button-component type="submit" class="w-100 btn-success" :is-loading="false">
         Отправить
       </button-component>
     </div>
@@ -30,16 +30,19 @@ import { watch } from 'vue'
 import { useMessageForm } from '@/composable/useMessageForm.js'
 import { useRoute } from 'vue-router'
 
-const { body, submitForm, errors, isLoading } = useMessageForm()
+const props = defineProps({
+  socket: {
+    required: true,
+    type: Object
+  }
+})
 
-const emit = defineEmits(['addMessage'])
+const { body, submitForm, errors } = useMessageForm(props.socket)
+
 const route = useRoute()
 
 const sendMessage = async () => {
-  const newMessage = await submitForm(route.params.username)
-  if (newMessage) {
-    emit('addMessage', newMessage)
-  }
+  submitForm(route.params.username)
 }
 
 watch(errors, () => {

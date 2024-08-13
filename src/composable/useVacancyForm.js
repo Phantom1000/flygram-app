@@ -66,7 +66,7 @@ export const useVacancyForm = () => {
       const token = await getToken()
       const { data, error } = await useFetch(
         vacancy === null ? 'post' : 'put',
-        vacancy === null ? 'vacancies' : `vacancy/${vacancy.id}`,
+        vacancy === null ? 'vacancies' : `vacancies/${vacancy.id}`,
         {
           description: description.value,
           skills: skills.value

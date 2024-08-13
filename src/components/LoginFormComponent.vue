@@ -38,13 +38,18 @@
         <button-component type="submit" class="w-100 btn-lg btn-primary" :is-loading="isLoading"
           >Войти</button-component
         >
-        <p class="mt-3">
-          Нет аккаунта?<RouterLink class="ms-2" :to="{ name: 'register' }"
-            >Зарегистрироваться</RouterLink
-          >
-        </p>
-        <p class="mt-3 mb-3 text-muted">© 2024</p>
       </form>
+    </div>
+    <div class="w-100 m-auto">
+      <p class="mt-3 text-center">
+        Нет аккаунта?<RouterLink class="ms-2" :to="{ name: 'register' }"
+          >Зарегистрироваться</RouterLink
+        >
+      </p>
+      <p class="mt-3 text-center">
+        <RouterLink class="ms-2" :to="{ name: 'resetPassword' }">Забыли пароль?</RouterLink>
+      </p>
+      <p class="mt-3 mb-3 text-muted text-center">© 2024</p>
     </div>
   </div>
 </template>

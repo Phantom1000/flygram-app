@@ -1,22 +1,20 @@
 import { ref, watch } from 'vue'
 import { useFetch } from '@/composable/useFetch'
-
-import { useToken } from '@/composable/useToken'
+import { useRoute } from 'vue-router'
 import utils from '@/utils.js'
 
-export const usePasswordForm = (username) => {
+export const useResetPasswordForm = () => {
   const password = ref('')
-  const newPassword = ref('')
   const passwordConfirm = ref('')
   const errors = ref([])
   const isLoading = ref(false)
-  const { getToken } = useToken()
+  const route = useRoute()
 
   const validatePassword = () => {
-    errors.value.newPassword = []
+    errors.value.password = []
     utils.validateString(
-      newPassword.value,
-      'newPassword',
+      password.value,
+      'password',
       errors,
       true,
       'Введите пароль',
@@ -27,39 +25,39 @@ export const usePasswordForm = (username) => {
       false,
       'Пароль не может содержать пробелы'
     )
-    if (newPassword.value !== passwordConfirm.value)
-      errors.value.newPassword.push('Пароли не совпадают')
+    if (password.value !== passwordConfirm.value) errors.value.password.push('Пароли не совпадают')
   }
 
-  watch(newPassword, validatePassword)
+  watch(password, validatePassword)
   watch(passwordConfirm, validatePassword)
 
   const validateForm = () => {
     errors.value = {}
     validatePassword()
-    return errors.value.newPassword.length == 0
+    return errors.value.password.length == 0
   }
 
   const submitForm = async () => {
     if (validateForm()) {
       errors.value = []
       isLoading.value = true
-      const token = await getToken()
-      const data = new FormData()
-      data.append('password', password.value)
-      data.append('new_password', newPassword.value)
-      const { error } = await useFetch('put', `users/${username}?update=password`, data, {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-        Accept: 'multipart/form-data'
-      })
+      const { error } = await useFetch(
+        'put',
+        'password',
+        {
+          password: password.value
+        },
+        {
+          Token: route.query.token,
+          'Content-Type': 'application/json'
+        }
+      )
       errors.value = error.value
       isLoading.value = false
     }
   }
   return {
     password,
-    newPassword,
     passwordConfirm,
     errors,
     isLoading,

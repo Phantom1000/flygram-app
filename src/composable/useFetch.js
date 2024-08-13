@@ -54,7 +54,6 @@ export const useFetch = async (method, endpoint, body, headers, errorMessage = f
       data: body,
       headers: headers
     })
-    console.log(response)
     if (response) {
       const { setMessage, setShow } = useFlashStore()
       data.value = utils.toCamel(response.data)
