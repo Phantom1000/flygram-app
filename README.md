@@ -1,35 +1,53 @@
-# flygram-app
+# Социальная сеть Flygram (Frontend)
 
-This template should help get you started developing with Vue 3 in Vite.
+Для использования приложения необходимо пройти регистрацию и авторизацию.
 
-## Recommended IDE Setup
+## Варианты использования
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+У авторизованного пользователя имеются следующие возможности
 
-## Customize configuration
+- добавление и редактирование информации о себе
+- изменение настроек безопасности аккаунта (изменение пароля, подтверждение электронной почты,
+  двухфакторная аутентификация, завершение сеансов приложения)
+- просмотр всех пользователей социальной сети и их личной информации
+- добавление и удаление других участников из друзей
+- добавление, редактирование и удаление своих публикаций
+- вступление в сообщества и создание своих
+- просмотр публикаций и участников сообществ
+- комментирование и оценка публикаций
+- отправление сообщений друзьям в личных чатах
+- размещение и просмотр вакансий
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## Возможности рекомендательной системы
 
-## Project Setup
+- подбор публикаций, которые могут заинтересовать пользователя
+- подбор возможных друзей
+- подбор возможных сообществ
+- подбор сотрудников
+- подбор вакансий для соискателей
+
+При разработке использовались следующие технологии:
+
+- Python 3.12
+- Веб-фреймворк Flask (REST API)
+- PostgreSQL
+- ORM SQLAlchemy (работа с базой данных)
+- Redis (кэширование, очередь сообщений)
+- Celery (фоновые задачи)
+- Docker
+- HTML, CSS, JavaScript
+- Bootstrap
+- Axios (AJAX)
+- Vue.js (SPA)
+
+## Установка зависимостей
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Запуск приложения
 
 ```sh
 npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
 ```
