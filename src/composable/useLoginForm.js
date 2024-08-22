@@ -80,7 +80,7 @@ export const useLoginForm = () => {
         const { setToken } = useToken()
         const { setCurrentUser } = useUserStore()
         const token = data.value.accessToken
-        const user = data.value.user
+        const user = utils.toCamel(data.value.user)
         if (token) {
           setToken(token, rememberMe.value)
         }

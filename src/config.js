@@ -1,5 +1,5 @@
 export default {
   appName: 'flygram',
-  apiUrl: 'https://localhost',
+  apiUrl: 'http://localhost:5000',
   defaultErrorMessage: 'Сервис временно недоступен'
 }

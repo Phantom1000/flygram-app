@@ -28,14 +28,14 @@
               >Удалить аккаунт</RouterLink
             >
           </div>
-          <div class="row mb-3 col-md-6" v-if="!currentUser.verified_email">
+          <div class="row mb-3 col-md-6" v-if="!currentUser.verifiedEmail">
             <RouterLink :to="{ name: 'verify-email' }" class="btn btn-primary"
               >Подтвердить почту</RouterLink
             >
           </div>
           <div
             class="row mb-3 col-md-6"
-            v-if="currentUser.verified_email && !currentUser.two_factor_enabled"
+            v-if="currentUser.verifiedEmail && !currentUser.twoFactorEnabled"
           >
             <button @click="setTwoFactor" class="btn btn-primary">
               Включить двухфакторную аутентификацию
@@ -43,7 +43,7 @@
           </div>
           <div
             class="row mb-3 col-md-6"
-            v-if="currentUser.verified_email && currentUser.two_factor_enabled"
+            v-if="currentUser.verifiedEmail && currentUser.twoFactorEnabled"
           >
             <button @click="setTwoFactor" class="btn btn-danger">
               Отключить двухфакторную аутентификацию
@@ -104,13 +104,13 @@ watchEffect(() => {
 })
 
 const setTwoFactor = async () => {
-  if (currentUser.value.two_factor_enabled) {
+  if (currentUser.value.twoFactorEnabled) {
     await disableTwoFactor()
   } else {
     await enableTwoFactor()
   }
   if (actionErrors.value.length === 0)
-    currentUser.value.two_factor_enabled = !currentUser.value.two_factor_enabled
+    currentUser.value.twoFactorEnabled = !currentUser.value.twoFactorEnabled
 }
 
 const deleteSession = (session) => {

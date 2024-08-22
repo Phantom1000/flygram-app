@@ -19,7 +19,8 @@ import { useUserStore } from '@/store/user'
 import { useToken } from '@/composable/useToken'
 import config from '@/config'
 import axios from 'axios'
-import router from './router'
+import router from '@/router'
+import utils from '@/utils.js'
 
 //const { token } = useTokenStore()
 const { setToken, removeToken } = useToken()
@@ -31,7 +32,7 @@ const loadCurrentUser = async () => {
     const response = await axios.get(`${config.apiUrl}/api/token`, { withCredentials: true })
     const data = response.data
     if (data.user && data.token) {
-      setCurrentUser(data.user)
+      setCurrentUser(utils.toCamel(data.user))
       setToken(data.token)
     } else {
       router.replace({ name: 'logout' })

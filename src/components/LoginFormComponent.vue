@@ -17,16 +17,25 @@
             label="Имя пользователя"
           ></input-component>
         </div>
-        <div class="form-floating">
-          <input-component
-            type="password"
-            id="floatingPassword"
-            placeholder="Пароль"
-            v-model="password"
-            autocomplete="current-password"
-            :errors="errors.password ?? []"
-            label="Пароль"
-          ></input-component>
+        <div class="d-flex">
+          <div class="form-floating flex-grow-1">
+            <input-component
+              :type="showPassword ? 'text' : 'password'"
+              id="floatingPassword"
+              placeholder="Пароль"
+              v-model="password"
+              autocomplete="current-password"
+              :errors="errors.password ?? []"
+              label="Пароль"
+            ></input-component>
+          </div>
+          <button
+            class="btn btn-secondary ms-2 mb-2 align-self-start hide-button flex-grow-0"
+            type="button"
+            @click="showPassword = !showPassword"
+          >
+            <FontAwesomeIcon :icon="showPassword ? faEyeSlash : faEye"></FontAwesomeIcon>
+          </button>
         </div>
 
         <div class="checkbox mb-3">
@@ -57,6 +66,12 @@
 <script setup>
 import { watch } from 'vue'
 import { useLoginForm } from '@/composable/useLoginForm.js'
+import { faEye } from '@fortawesome/free-regular-svg-icons'
+import { faEyeSlash } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { ref } from 'vue'
+
+const showPassword = ref(false)
 
 const { username, password, rememberMe, submitForm, errors, isLoading } = useLoginForm()
 
@@ -89,5 +104,10 @@ watch(errors, () => {
 .form-signin {
   min-width: 450px;
   padding: 15px;
+}
+
+.hide-button {
+  width: 50px;
+  height: 55px;
 }
 </style>
